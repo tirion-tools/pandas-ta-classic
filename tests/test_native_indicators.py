@@ -578,6 +578,11 @@ class TestNativeVolume(_NativeBase):
         r = ta.pvi(self.c, self.v)
         self._assert_valid(r, "pvi")
 
+    def test_vclimax(self):
+        r = ta.vclimax(self.h, self.l, self.c, self.v)
+        self._assert_valid(r, "vclimax")
+        self.assertIsInstance(r, pd.DataFrame)
+
     def test_pvo(self):
         r = ta.pvo(self.v)
         self._assert_valid(r, "pvo")

@@ -261,3 +261,37 @@ def vfi(h, l, c, v, length=130, coef=0.2, vcoef=2.5):
         mf = tp[i] - tp[i - 1]
         vcp[i] = vc if mf > cutoff else -vc if mf < -cutoff else 0.0
     return ema(rolling(vcp, length, np.sum) / vave, 3)
+
+
+def vclimax(h, l, c, v, length=50, lookback=20, mult=2.0, run=3, drop=8.0, window=5, close_pct=0.6):
+    """Volume climax (Wyckoff selling/buying climax; Coulling, A Complete Guide to Volume Price Analysis):
+    heavy volume against the `length` bars before, on a new `lookback` low (high), closing in the upper
+    (lower) part of the range, after `run` down (up) closes or a `drop` % move over `window` bars.
+    Returns (signal, follow-through)."""
+    n = len(c)
+    signal = np.full(n, np.nan)
+    follow = np.full(n, np.nan)
+    for i in range(max(length, lookback, run + 1, window + 1), n):
+        average = np.mean(v[i - length : i])
+        rvol = 0.0 if v[i] == 0 and average == 0 else v[i] / average
+        span = h[i] - l[i]
+        cpos = (c[i] - l[i]) / span if span != 0 else 0.5
+        downs = all(c[j] < c[j - 1] for j in range(i - run, i))
+        ups = all(c[j] > c[j - 1] for j in range(i - run, i))
+        move = (c[i - 1] / c[i - 1 - window] - 1) * 100
+        if rvol >= mult and l[i] <= min(l[i - lookback : i]) and cpos >= close_pct and (downs or move <= -drop):
+            signal[i] = 1.0
+        elif rvol >= mult and h[i] >= max(h[i - lookback : i]) and cpos <= 1 - close_pct and (ups or move >= drop):
+            signal[i] = -1.0
+        else:
+            signal[i] = 0.0
+    for i in range(1, n):
+        if np.isnan(signal[i - 1]):
+            continue
+        if signal[i - 1] == 1 and l[i] > l[i - 1] and c[i] > c[i - 1]:
+            follow[i] = 1.0
+        elif signal[i - 1] == -1 and h[i] < h[i - 1] and c[i] < c[i - 1]:
+            follow[i] = -1.0
+        else:
+            follow[i] = 0.0
+    return signal, follow

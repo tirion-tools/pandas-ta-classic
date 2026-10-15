@@ -1,7 +1,7 @@
 Indicators Reference
 ====================
 
-**Pandas TA Classic** includes 224 indicators in the Category system plus 62 CDL patterns accessible via ``cdl_pattern()`` (284 unique total — ``cdl_doji`` and ``cdl_inside`` are counted in both) organized into the following categories:
+**Pandas TA Classic** includes 225 indicators in the Category system plus 62 CDL patterns accessible via ``cdl_pattern()`` (285 unique total — ``cdl_doji`` and ``cdl_inside`` are counted in both) organized into the following categories:
 
 * **Candles** (5 wrappers + 62 native CDL patterns) - Category count includes wrapper/accessor indicators (``cdl_pattern``, ``cdl_doji``, ``cdl_inside``, ``cdl_z``, ``ha``). The 62 pattern names are exposed through ``cdl_pattern()``.
 * **Cycles** (8) - Cycle-based and Hilbert Transform indicators  
@@ -11,7 +11,7 @@ Indicators Reference
 * **Statistics** (14) - Statistical analysis functions
 * **Trend** (26) - Trend identification and direction indicators
 * **Volatility** (18) - Volatility and range-based indicators
-* **Volume** (20) - Volume analysis indicators
+* **Volume** (21) - Volume analysis indicators
 * **Math** (31) - Element-wise math operators and transforms
 
 .. note::
@@ -493,7 +493,7 @@ Volatility and range-based indicators:
 * *True Range*: **true_range**
 * *Ulcer Index*: **ui**
 
-Volume (20)
+Volume (21)
 -----------
 
 Volume analysis indicators:
@@ -514,6 +514,7 @@ Volume analysis indicators:
 * *Price-Volume*: **pvol**
 * *Price Volume Rank*: **pvr**
 * *Price Volume Trend*: **pvt**
+* *Volume Climax*: **vclimax** (Wyckoff selling/buying climax labels, with the follow-through bar; marks events, not bottoms or tops)
 * *Volume Flow Indicator*: **vfi**
 * *Volume Oscillator*: **vosc**
 * *Volume Profile*: **vp**

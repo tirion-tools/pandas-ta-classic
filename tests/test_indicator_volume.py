@@ -1,6 +1,7 @@
 from unittest import TestCase
 
-from pandas import DataFrame
+import numpy as np
+from pandas import DataFrame, Series, date_range
 
 import pandas_ta_classic as pandas_ta
 from tests.assertions import IndicatorSpec, assert_indicator_standard, assert_talib
@@ -12,6 +13,37 @@ try:
     HAS_TALIB = True
 except ImportError:
     HAS_TALIB = False
+
+
+_VCLIMAX = "VCLIMAX_50_20_2.0_3_8.0_5_0.6"
+_VCLIMAX_FT = "VCLIMAXft_50_20_2.0_3_8.0_5_0.6"
+
+
+def _climax_frame(bars: list[tuple[float, float, float, float]]) -> dict[str, Series]:
+    """55 flat bars (high 101, low 99, close 100, volume 1000), then *bars* as (high, low, close, volume)."""
+    rows = [(101.0, 99.0, 100.0, 1000.0)] * 55 + bars
+    index = date_range("2020-01-01", periods=len(rows), freq="D")
+    high, low, close, volume = (Series([row[i] for row in rows], index=index) for i in range(4))
+    return {"high": high, "low": low, "close": close, "volume": volume}
+
+
+# Three down closes, then a bar on three times the volume that makes a new low and
+# closes at 90 % of its range, then a bar with a higher low and a higher close.
+_SELLING = [
+    (100.0, 98.0, 99.0, 1000.0),
+    (99.0, 97.0, 98.0, 1000.0),
+    (98.0, 96.0, 97.0, 1000.0),
+    (98.0, 94.0, 97.6, 3000.0),
+    (99.0, 95.0, 98.0, 1500.0),
+]
+# The mirror: three up closes, a heavy new high closing at 10 % of its range, a lower high and close.
+_BUYING = [
+    (102.0, 100.0, 101.0, 1000.0),
+    (103.0, 101.0, 102.0, 1000.0),
+    (104.0, 102.0, 103.0, 1000.0),
+    (106.0, 102.0, 102.4, 3000.0),
+    (105.0, 101.0, 102.0, 1500.0),
+]
 
 
 class TestVolume(TestCase):
@@ -347,3 +379,86 @@ class TestVolume(TestCase):
         )
         self.assertIsNone(pandas_ta.wad(self.high, None, self.close))
         self.assertIsNone(pandas_ta.wad(self.high, self.low, None))
+
+    def test_vclimax(self):
+        assert_indicator_standard(
+            self,
+            IndicatorSpec(
+                func=pandas_ta.vclimax,
+                args=[self.high, self.low, self.close, self.volume_],
+                expected_name=_VCLIMAX,
+                expected_type=DataFrame,
+                expected_columns=["VCLIMAXr_50", "VCLIMAXp", _VCLIMAX, _VCLIMAX_FT],
+            ),
+        )
+
+    def test_vclimax_selling_climax_and_follow_through(self):
+        result = pandas_ta.vclimax(**_climax_frame(_SELLING))
+        climax = result.iloc[-2]
+        self.assertAlmostEqual(climax["VCLIMAXr_50"], 3.0)
+        self.assertAlmostEqual(climax["VCLIMAXp"], 0.9)
+        self.assertEqual(climax[_VCLIMAX], 1.0)
+        self.assertEqual(result[_VCLIMAX].iloc[50:-2].abs().sum(), 0.0)
+        self.assertEqual(result[_VCLIMAX].iloc[-1], 0.0)
+        self.assertEqual(result[_VCLIMAX_FT].iloc[-1], 1.0)
+        self.assertEqual(result[_VCLIMAX_FT].iloc[51:-1].abs().sum(), 0.0)
+
+    def test_vclimax_buying_climax_and_follow_through(self):
+        result = pandas_ta.vclimax(**_climax_frame(_BUYING))
+        self.assertAlmostEqual(result["VCLIMAXp"].iloc[-2], 0.1)
+        self.assertEqual(result[_VCLIMAX].iloc[-2], -1.0)
+        self.assertEqual(result[_VCLIMAX_FT].iloc[-1], -1.0)
+
+    def test_vclimax_no_follow_through_without_a_higher_low(self):
+        bars = _SELLING[:-1] + [(99.0, 93.0, 98.0, 1500.0)]
+        result = pandas_ta.vclimax(**_climax_frame(bars))
+        self.assertEqual(result[_VCLIMAX].iloc[-2], 1.0)
+        self.assertEqual(result[_VCLIMAX_FT].iloc[-1], 0.0)
+
+    def test_vclimax_heavy_bar_closing_on_its_low_is_no_climax(self):
+        bars = _SELLING[:3] + [(98.0, 94.0, 94.4, 3000.0)]
+        result = pandas_ta.vclimax(**_climax_frame(bars))
+        self.assertAlmostEqual(result["VCLIMAXp"].iloc[-1], 0.1)
+        self.assertEqual(result[_VCLIMAX].iloc[-1], 0.0)
+
+    def test_vclimax_needs_the_volume(self):
+        bars = _SELLING[:3] + [(98.0, 94.0, 97.6, 1900.0)]
+        self.assertEqual(pandas_ta.vclimax(**_climax_frame(bars))[_VCLIMAX].iloc[-1], 0.0)
+        self.assertEqual(pandas_ta.vclimax(**_climax_frame(bars), mult=1.9)["VCLIMAX_50_20_1.9_3_8.0_5_0.6"].iloc[-1], 1.0)
+
+    def test_vclimax_drop_stands_in_for_the_run(self):
+        # Two down closes only, but 100 -> 91.5 (-8.5 %) over the five bars before the climax.
+        bars = [
+            (100.0, 93.0, 94.0, 1000.0),
+            (95.0, 92.0, 93.0, 1000.0),
+            (94.0, 92.5, 93.5, 1000.0),
+            (94.0, 91.5, 92.5, 1000.0),
+            (93.0, 90.5, 91.5, 1000.0),
+            (93.0, 89.0, 92.6, 3000.0),
+        ]
+        result = pandas_ta.vclimax(**_climax_frame(bars))
+        self.assertEqual(result[_VCLIMAX].iloc[-1], 1.0)
+        self.assertEqual(pandas_ta.vclimax(**_climax_frame(bars), drop=10)["VCLIMAX_50_20_2.0_3_10.0_5_0.6"].iloc[-1], 0.0)
+
+    def test_vclimax_warm_up_and_flat_bar(self):
+        frame = _climax_frame(_SELLING)
+        frame["high"].iloc[10] = frame["low"].iloc[10] = frame["close"].iloc[10] = 100.0
+        result = pandas_ta.vclimax(**frame)
+        self.assertTrue(result["VCLIMAXr_50"].iloc[:50].isna().all())
+        self.assertTrue(result[_VCLIMAX].iloc[:50].isna().all())
+        self.assertTrue(result[_VCLIMAX_FT].iloc[:51].isna().all())
+        self.assertFalse(result[_VCLIMAX].iloc[50:].isna().any())
+        self.assertEqual(result["VCLIMAXp"].iloc[10], 0.5)
+
+    def test_vclimax_no_lookahead(self):
+        frame = _climax_frame(_SELLING)
+        full = pandas_ta.vclimax(**frame)
+        for cut in (54, 58, 59):
+            part = pandas_ta.vclimax(**{key: value.iloc[:cut] for key, value in frame.items()})
+            np.testing.assert_array_equal(part.to_numpy(), full.iloc[:cut].to_numpy())
+
+    def test_vclimax_close_pct_bounds(self):
+        frame = _climax_frame(_SELLING)
+        for bad in (0.5, 1, 1.2):
+            with self.assertRaisesRegex(ValueError, rf"vclimax\(\) close_pct must be a number > 0.5 and < 1, got {bad}"):
+                pandas_ta.vclimax(**frame, close_pct=bad)

@@ -958,6 +958,11 @@ Legend: ``yes`` = indicator has corresponding implementation in that library by 
      - yes
      - no
      - no
+   * - vclimax
+     - volume
+     - yes
+     - no
+     - no
    * - vfi
      - volume
      - yes

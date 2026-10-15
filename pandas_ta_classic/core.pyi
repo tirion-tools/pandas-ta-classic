@@ -743,6 +743,18 @@ class AnalysisIndicators:
     def pvol(self, offset: int | None = None, **kwargs: Any) -> Series | None: ...
     def pvr(self, offset: int | None = None, **kwargs: Any) -> Series | None: ...
     def pvt(self, drift: int | None = None, offset: int | None = None, **kwargs: Any) -> Series | None: ...
+    def vclimax(
+        self,
+        length: int | None = None,
+        lookback: int | None = None,
+        mult: float | None = None,
+        run: int | None = None,
+        drop: float | None = None,
+        window: int | None = None,
+        close_pct: float | None = None,
+        offset: int | None = None,
+        **kwargs: Any,
+    ) -> DataFrame | None: ...
     def vfi(
         self,
         length: int | None = None,

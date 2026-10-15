@@ -196,6 +196,7 @@ RETURNS_ALL_NAN = frozenset(
         "ui",
         "uo",
         "variance",
+        "vclimax",
         "vfi",
         "vhf",
         "vidya",

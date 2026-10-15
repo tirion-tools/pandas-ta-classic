@@ -116,6 +116,14 @@ class TestVolumeExtension(TestCase):
         self.assertIsInstance(result, DataFrame)
         self.assertEqual(result.name, "VP_10")
 
+    def test_vclimax_ext(self):
+        self.data.ta.vclimax(append=True)
+        self.assertIsInstance(self.data, DataFrame)
+        self.assertEqual(
+            list(self.data.columns[-4:]),
+            ["VCLIMAXr_50", "VCLIMAXp", "VCLIMAX_50_20_2.0_3_8.0_5_0.6", "VCLIMAXft_50_20_2.0_3_8.0_5_0.6"],
+        )
+
     def test_vfi_ext(self):
         self.data.ta.vfi(append=True)
         self.assertIsInstance(self.data, DataFrame)

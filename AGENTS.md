@@ -2,7 +2,7 @@
 
 ## Repository Context
 
-- **Project:** pandas-ta-classic — Community-maintained Python 3 technical analysis library with 224 indicators across 10 categories (Candles, Cycles, Momentum, Overlap, Performance, Statistics, Trend, Volatility, Volume, Math) plus 62 native candlestick patterns
+- **Project:** pandas-ta-classic — Community-maintained Python 3 technical analysis library with 225 indicators across 10 categories (Candles, Cycles, Momentum, Overlap, Performance, Statistics, Trend, Volatility, Volume, Math) plus 62 native candlestick patterns
 - **Main Language:** Python 3.11+ (rolling 5-version support: 3.11–3.15)
 - **Coding Style:** PEP 8; type hints on all function signatures; f-strings preferred; pandas extension via `@pd.api.extensions.register_dataframe_accessor("ta")`
 - **Architecture:** Modular — indicators organized by category subpackage (e.g., `pandas_ta_classic/momentum/rsi.py`); dynamic category discovery via `_meta.py`; all indicators exposed through `pandas_ta_classic` namespace
@@ -268,7 +268,7 @@ General rules taken from #142 (lint modernization, import conventions, silent-fa
 ### Documentation
 
 8. **Docstring defaults match the code.** Every `Default:` in an indicator docstring equals the value the validation call resolves `None` to. *Enforced:* `tests/test_docstring_defaults.py`.
-9. **Duplicated facts have one owner or a parity check.** The `core.pyi` pipeline (CI, pre-commit, manual) and indicator/pattern counts (224 / 62) must agree; black and ruff versions have one owner, `pyproject.toml`. *Enforced:* the CI stub sync; counts by *review*.
+9. **Duplicated facts have one owner or a parity check.** The `core.pyi` pipeline (CI, pre-commit, manual) and indicator/pattern counts (225 / 62) must agree; black and ruff versions have one owner, `pyproject.toml`. *Enforced:* the CI stub sync; counts by *review*.
 10. **Docs, examples and notebooks move with the API.** A removal or rename also updates `docs/`, `README.md`, `examples/` (scripts and notebooks), tests, `pyproject.toml` extras, `Imports` keys and mypy overrides, and leaves a removal note where the old API was documented. *Review;* the checklist greps catch leftover imports.
 
 ### Deprecation, removal and change records
@@ -402,7 +402,7 @@ python -m build
 |---|---|
 | `CHANGELOG.md` | Detailed changelog with version history, added indicators, fixes, and deprecations |
 | `CONTRIBUTING.md` | Full contributor guide: dev setup, coding standards, PR process, indicator checklist |
-| `docs/indicators.rst` | Complete reference of all 224 indicators across 10 categories + 62 CDL patterns with parameters and return types |
+| `docs/indicators.rst` | Complete reference of all 225 indicators across 10 categories + 62 CDL patterns with parameters and return types |
 | `docs/indicator_support_matrix.rst` | Matrix mapping each indicator to its TA-Lib/tulipy counterpart where available |
 | `docs/strategies.rst` | Strategy system documentation: multiprocessing, named groups, `df.ta.strategy()` |
 | `docs/testing.rst` | Testing guide: pytest structure, oracle tests, regression snapshots, property-based tests |

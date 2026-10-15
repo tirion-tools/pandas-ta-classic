@@ -162,3 +162,13 @@ def test_vfi(spy):
     np.testing.assert_array_equal(np.isnan(got), np.isnan(expected))
     _close(got, expected, 1e-9)
     assert np.count_nonzero(got[np.isfinite(got)]) > 4000
+
+
+@pytest.mark.parametrize("kwargs", [{}, {"length": 20, "lookback": 10, "mult": 1.5, "run": 2, "drop": 4.0, "window": 3, "close_pct": 0.55}])
+def test_vclimax(spy, kwargs):
+    got = ta.vclimax(spy.high, spy.low, spy.close, spy.volume, **kwargs)
+    signal, follow = ref.vclimax(*(spy[c].to_numpy(float) for c in ("high", "low", "close", "volume")), **kwargs)
+    np.testing.assert_array_equal(got.iloc[:, 2].to_numpy(float), signal)
+    np.testing.assert_array_equal(got.iloc[:, 3].to_numpy(float), follow)
+    # Both kinds of climax and a follow-through occur, so the comparison is not of zeros.
+    assert {-1.0, 1.0} <= set(signal[np.isfinite(signal)]) and (follow == 1).any()

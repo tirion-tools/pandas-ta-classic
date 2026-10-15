@@ -465,7 +465,7 @@ Now that you've got the basics, explore more:
 
 1. **[Full Documentation](https://xgboosted.github.io/pandas-ta-classic/)** - Complete API reference
 2. **[Tutorials](https://xgboosted.github.io/pandas-ta-classic/tutorials.html)** - Step-by-step guides for common tasks
-3. **[Indicator Reference](https://xgboosted.github.io/pandas-ta-classic/indicators.html)** - 224 indicators plus 62 CDL patterns (284 unique total)
+3. **[Indicator Reference](https://xgboosted.github.io/pandas-ta-classic/indicators.html)** - 225 indicators plus 62 CDL patterns (285 unique total)
 4. **[Strategy Guide](https://xgboosted.github.io/pandas-ta-classic/strategies.html)** - Advanced strategy system
 5. **[Examples](https://github.com/xgboosted/pandas-ta-classic/tree/main/examples)** - Jupyter notebooks with real examples
 
